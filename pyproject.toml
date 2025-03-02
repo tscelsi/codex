@@ -18,6 +18,11 @@ dev = [
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+log_file = "logs/pytest.log"
+log_file_level = "DEBUG"
+pythonpath = ["src", "test"]
+testpaths = ["test"]
+
 
 [tool.ruff]
 line-length = 88

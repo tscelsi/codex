@@ -107,7 +107,7 @@ class LocalSubscriber(AbstractSubscriber):
         self._logger.debug("loop started")
         while True:
             event = await self.queue.get()
-            self._logger.debug(f"Got event: {event}")
+            self._logger.debug(f"Received event (qsize={self.queue.qsize()}): {event}")
             try:
                 self._logger.debug(f"Handling event: {event}")
                 await self.handle(event)
