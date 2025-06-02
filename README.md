@@ -1,7 +1,3 @@
-# DDD-toolkit
+# Codex
 
-A toolkit of DDD-esque tools for Python.
-
-## Unit-of-work
-
-## Event-driven architecture
+A toolkit of code patterns that I use (or try to use) often.
