@@ -2,11 +2,11 @@ CSV-validator
 
 Frequently in my coding travels, I have found myself needing to upload and validate a CSV file, ensuring that it contains the correct headers and data types. This is a simple CSV validator that uses pydantic to validate the CSV file against a predefined schema. If there are errors, it will return a list of the errors along with the row number and column name, so they're easy to display to a user or log.
 
-## Sample usage
+## Usage
 
 ```python
 
-from csv_validator import CSVValidator, Reader
+from csv_validator import IterValidator, CsvReader
 
 class MySchema:
     name: str
@@ -15,18 +15,10 @@ class MySchema:
 
 csv_file_path = 'path/to/your/file.csv'
 
-reader = Reader(file=csv_file_path)
-validator = CSVValidator(schema=MySchema, reader=reader)
-for row, errors in validator:
-    print(row)  # Each row is a validated instance of MySchema
-    if errors:
-        print(f"Errors in row {row}: {errors}")
-
-# or much faster (hypothetically) by validating all rows at once:
+reader = CsvReader(file=csv_file_path)
+validator = IterValidator(schema=MySchema, reader=reader)
 data, errors = validator.validate_all(reader=reader)
 ```
-
-For big files, the reader is responsible for reading the file gradually and passing the rows to the validator.
 
 
 ## Benchmarks
