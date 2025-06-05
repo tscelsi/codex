@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Annotated, Any
 
 import pytest
-from pydantic import BaseModel
+from pydantic import AfterValidator, BaseModel
 
 from csv_validator.validator import AbstractIterReader, IterValidator
 
@@ -78,6 +78,24 @@ def test_validate_with_error(reader_with_error: AbstractIterReader):
 def test_validate_with_null_value(data: dict[str, Any], error_len: int):
     class Schema(BaseModel):
         a: int | None
+
+    validator = IterValidator(schema=Schema, reader=create_reader([data]))
+    _, errors = validator.validate_all()
+    assert len(errors) == error_len
+
+
+@pytest.mark.parametrize(
+    "data, error_len",
+    [({"a": 1}, 1), ({"a": "not_an_int"}, 1), ({"a": 2}, 0)],
+)
+def test_with_custom_validations(data: dict[str, Any], error_len: int):
+    def is_even(value: int) -> int:
+        if value % 2 == 1:
+            raise ValueError(f"{value} is not an even number")
+        return value
+
+    class Schema(BaseModel):
+        a: Annotated[int, AfterValidator(is_even)]
 
     validator = IterValidator(schema=Schema, reader=create_reader([data]))
     _, errors = validator.validate_all()

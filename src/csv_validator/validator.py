@@ -6,7 +6,7 @@ from typing import Any, Iterable
 import pandas as pd
 import polars as pl
 from pydantic import BaseModel, ValidationError
-from pydantic_core import SchemaValidator
+from pydantic_core import SchemaSerializer, SchemaValidator
 
 
 class AbstractIterReader(abc.ABC):
@@ -110,14 +110,17 @@ class IterValidator:
     def __init__(self, schema: type[BaseModel], reader: AbstractIterReader):
         self.schema = schema
         self.reader = reader
+        self.validator = SchemaValidator(self.schema.__pydantic_core_schema__)
+        self.serializer = SchemaSerializer(
+            self.schema.__pydantic_core_schema__
+        )
 
     def validate_all(self):
         errors: list[dict[str, Any]] = []
         data: list[dict[str, Any]] = []
-        v = SchemaValidator(self.schema.__pydantic_core_schema__)
         for i, row in enumerate(self.reader.read()):
             try:
-                validated_row = v.validate_python(row)
+                validated_row = self.validator.validate_python(row)
                 data.append(validated_row.model_dump())
             except ValidationError as e:
                 _errors = e.errors()
