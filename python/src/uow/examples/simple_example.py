@@ -12,11 +12,15 @@ from uow.databases import DatabasesUnitOfWork
 async def transaction_failing():
     """This example demonstrates how a transaction can be rolled back if an error
     occurs after the transaction has started."""
-    async with Database("postgresql://root:password@localhost:5432/test") as database:
+    async with Database(
+        "postgresql://root:password@localhost:5432/test"
+    ) as database:
         uow = DatabasesUnitOfWork(database)
         try:
             async with uow:
-                query = "CREATE TABLE IF NOT EXISTS Test (id INTEGER PRIMARY KEY);"
+                query = (
+                    "CREATE TABLE IF NOT EXISTS Test (id INTEGER PRIMARY KEY);"
+                )
                 await database.execute(query)  # type: ignore
                 raise ValueError("Transaction failed")
         except ValueError:

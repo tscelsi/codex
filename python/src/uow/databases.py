@@ -9,11 +9,17 @@ class DatabasesUnitOfWork(AbstractUnitOfWork):
         self._transaction = None
         self.committed = False
 
-    async def __aenter__(self, isolation: str | None = None) -> AbstractUnitOfWork:
-        self._transaction = await self._database.transaction(isolation=isolation)
+    async def __aenter__(
+        self, isolation: str | None = None
+    ) -> AbstractUnitOfWork:
+        self._transaction = await self._database.transaction(
+            isolation=isolation
+        )
         return await super().__aenter__()
 
-    async def __aexit__(self, exc_type: type, exc_val: Exception, exc_tb: object):
+    async def __aexit__(
+        self, exc_type: type, exc_val: Exception, exc_tb: object
+    ):
         await self.rollback()
 
     async def rollback(self):

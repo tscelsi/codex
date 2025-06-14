@@ -9,6 +9,7 @@ dependencies = [
     "polars>=1.30.0",
     "pydantic>=2.11.5",
     "redis>=5.2.1",
+    "ucall>=0.5.4",
 ]
 
 [dependency-groups]

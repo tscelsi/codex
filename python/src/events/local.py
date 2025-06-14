@@ -1,27 +1,21 @@
-import abc
 import asyncio
 import logging
-import typing
 from collections import defaultdict
 from typing import Any, NoReturn
 from uuid import uuid4
 
 from utils.logger import CustomLoggingAdapter
 
-Topic: typing.TypeAlias = str
-
-
-class AbstractSubscriber(abc.ABC):
-    @abc.abstractmethod
-    async def handle(self, event: dict[str, Any]) -> None:
-        raise NotImplementedError
+from .base import AbstractSubscriber, Topic
 
 
 class LocalPublisher:
     def __init__(self):
         self._id = uuid4()
         self._latest_event: dict[str, Any] | None = None
-        self.subscribers: dict[Topic, list["LocalSubscriber"]] = defaultdict(list)
+        self.subscribers: dict[Topic, list["LocalSubscriber"]] = defaultdict(
+            list
+        )
         self._logger = CustomLoggingAdapter(
             logging.getLogger(__name__),
             {"ctx": self},
@@ -51,24 +45,14 @@ class LocalPublisher:
 
 class LocalSubscriber(AbstractSubscriber):
     def __init__(self, publisher: LocalPublisher):
-        self._id = uuid4()
         self.publisher = publisher
         self.queue = asyncio.Queue[dict[str, Any]]()
-        self.num_handled: int = 0
-        self._worker: asyncio.Task[None] | None = None
-        self._topics: set[Topic] = set()
-        self._logger = CustomLoggingAdapter(
-            logging.getLogger(__name__),
-            {"ctx": self},
-        )
-
-    def __repr__(self):
-        return f"sub-{self._id}"
+        super().__init__()
 
     def notify(self, event: dict[str, Any]):
         self.queue.put_nowait(event)
 
-    def subscribe(self, topics: list[str]):
+    async def subscribe(self, topics: list[str]):
         """Subscribe to a topic.
 
         a) Register the subscriber with the broker
@@ -87,27 +71,12 @@ class LocalSubscriber(AbstractSubscriber):
             self._worker = asyncio.create_task(self._loop())
             self._worker.add_done_callback(self._listening_task_done_callback)
 
-    def _listening_task_done_callback(self, task: asyncio.Task[None]) -> None:
-        """Callback for when the listening task is done.
-        Only called when the task is cancelled, all other exceptions are
-        handled in the _loop() fn."""
-        self._logger.debug("loop done")
-        self._listening_task = None
-        try:
-            exc = task.exception()
-        except asyncio.CancelledError:
-            exc = None
-        if exc is not None:
-            self._logger.error(f"Exited with exception: {exc}")
-            self._logger.exception(exc)
-            pass
-
     async def _loop(self) -> NoReturn:
         """Loop that takes an item from the queue and handles it."""
         self._logger.debug("loop started")
         while True:
             event = await self.queue.get()
-            self._logger.debug(f"Received event (qsize={self.queue.qsize()}): {event}")
+            self._logger.debug(f"Received event: {event}")
             try:
                 self._logger.debug(f"Handling event: {event}")
                 await self.handle(event)
@@ -118,4 +87,3 @@ class LocalSubscriber(AbstractSubscriber):
             finally:
                 self._logger.debug(f"Done handling event: {event}")
                 self.queue.task_done()
-                self.num_handled += 1

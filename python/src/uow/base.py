@@ -6,10 +6,14 @@ class UnitOfWorkError(Exception):
 
 
 class AbstractUnitOfWork(abc.ABC):
-    async def __aenter__(self, isolation: str | None = None) -> "AbstractUnitOfWork":
+    async def __aenter__(
+        self, isolation: str | None = None
+    ) -> "AbstractUnitOfWork":
         return self
 
-    async def __aexit__(self, exc_type: type, exc_val: Exception, exc_tb: object):
+    async def __aexit__(
+        self, exc_type: type, exc_val: Exception, exc_tb: object
+    ):
         await self.rollback()
 
     @abc.abstractmethod
