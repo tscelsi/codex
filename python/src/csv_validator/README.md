@@ -6,7 +6,7 @@ Frequently in my coding travels, I have found myself needing to upload and valid
 
 ```python
 
-from csv_validator import IterValidator, CsvReader
+from csv_validator import CsvValidator, CsvReader
 
 class MySchema:
     name: str
