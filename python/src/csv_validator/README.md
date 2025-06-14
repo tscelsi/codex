@@ -16,8 +16,8 @@ class MySchema:
 csv_file_path = 'path/to/your/file.csv'
 
 reader = CsvReader(path=csv_file_path)
-validator = CsvValidator(schema=MySchema, reader=reader)
-data, errors = validator.validate_all()
+validator = CsvValidator(schema=MySchema)
+data, errors = validator.validate_all(reader=reader)
 ```
 
 
@@ -31,6 +31,6 @@ The benchmark notebook can be found [here](/src/csv_validator/benchmark.ipynb).
 | PolarsValidator | 1m | 1.68 s ± 8.25 ms per loop | 595,238rps
 | SlowerIterValidator | 1m | 1.37 s ± 3.65 ms per loop | 729,927rps
 | IterValidator (using `model_dump`) | 1m | 1.22 s ± 8.51 ms per loop | 819,672rps
-| IterValidator (using pydantic-code `SchemaValidator`) | 1m | 1.03 s ± 94.3 ms per loop | 970,873rps
+| IterValidator (using pydantic-core `SchemaValidator`) | 1m | 1.03 s ± 94.3 ms per loop | 970,873rps
 
 Benchmarks run on Apple M3 Pro, 18GB RAM.
